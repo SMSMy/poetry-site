@@ -1,0 +1,83 @@
+:root {
+  --demo-ink: #29231d;
+  --demo-muted: #766a60;
+  --demo-paper: #fbf9f5;
+  --demo-border: #e5ddd2;
+  --demo-accent: #805326;
+}
+
+html { scroll-behavior: smooth; }
+body.static-demo { margin: 0; color: var(--demo-ink); background: var(--demo-paper); direction: rtl; }
+.site-header, .site-footer { width: min(1120px, calc(100% - 40px)); margin-inline: auto; }
+.site-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 24px; border-bottom: 1px solid var(--demo-border); }
+.site-header nav { display: flex; gap: 20px; flex-wrap: wrap; }
+.site-header a, .brand { color: var(--demo-accent); text-decoration: none; }
+.brand { font-size: 23px; font-weight: 800; }
+.demo-main.page-container { width: min(1120px, calc(100% - 40px)); margin-inline: auto; padding-block: 36px 72px; }
+.search-hero { max-width: 850px; margin: 28px auto 34px; text-align: center; }
+.search-hero h1 { margin: 8px 0; font-size: clamp(32px, 6vw, 52px); color: var(--demo-accent); }
+.eyebrow, .hero-summary, .index-size-hint, .breadcrumb, .poem-total, .explanation-note { color: var(--demo-muted); }
+.hero-summary { font-size: 19px; }
+.search-form { margin-top: 26px; padding: 22px; background: white; border: 1px solid var(--demo-border); border-radius: 20px; box-shadow: 0 12px 34px rgba(58, 43, 26, .07); text-align: right; }
+.search-form input, .search-form select { box-sizing: border-box; width: 100%; min-height: 48px; padding: 10px 13px; border: 1px solid var(--demo-border); border-radius: 10px; background: #fff; color: var(--demo-ink); font: inherit; }
+.search-form input { font-size: 19px; }
+.filter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-block: 15px; }
+.filter-grid label { display: grid; gap: 7px; color: var(--demo-muted); font-size: 14px; }
+.search-form button { min-height: 46px; padding: 10px 22px; border: 0; border-radius: 10px; color: white; background: var(--demo-accent); font: inherit; cursor: pointer; }
+.search-form button:hover { background: #603b19; }
+.index-size-hint { margin-bottom: 0; font-size: 14px; }
+.stats-row { display: flex; justify-content: center; gap: 16px; margin: 30px auto 48px; }
+.stats-row div { display: flex; align-items: baseline; gap: 8px; padding: 13px 22px; background: #f3eee7; border: 1px solid var(--demo-border); border-radius: 999px; }
+.stats-row strong { color: var(--demo-accent); font-size: 22px; }
+.results-section, .era-overview, .poet-biography, .poem-explanation, .poet-poems { margin-block: 30px; padding: 25px; background: white; border: 1px solid var(--demo-border); border-radius: 16px; }
+.results-section h2, .era-overview h2, .poet-biography h2 { margin-top: 0; }
+.search-results { display: grid; gap: 12px; padding: 0; list-style: none; }
+.search-result { padding: 15px; border: 1px solid var(--demo-border); border-radius: 12px; }
+.search-result > a { color: var(--demo-accent); font-size: 19px; font-weight: 700; }
+.result-snippet { margin-bottom: 0; line-height: 1.9; }
+.result-snippet mark { padding-inline: 2px; background: #f5dfad; border-radius: 3px; }
+.era-overview ul { display: flex; gap: 10px; flex-wrap: wrap; padding: 0; list-style: none; }
+.era-overview li a, .era-badge { display: inline-block; padding: 8px 14px; border: 1px solid var(--demo-border); border-radius: 999px; color: var(--demo-accent); background: #f5f0e9; text-decoration: none; }
+.page-heading { text-align: center; margin-bottom: 32px; }
+.page-heading h1, .era-page h1 { color: var(--demo-accent); font-size: clamp(30px, 5vw, 46px); }
+.poem-page { max-width: 900px; margin-inline: auto; }
+.poem-title-main { color: var(--demo-accent); text-align: center; font-size: clamp(28px, 4vw, 42px); }
+.poem-author { text-align: center; font-size: 22px; }
+.poem-author a { color: var(--demo-accent); }
+.poem-meta { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-block: 22px; }
+.poem-meta span { padding: 7px 11px; color: var(--demo-muted); background: #f4efe8; border: 1px solid var(--demo-border); border-radius: 999px; }
+.poem-display-area { margin-block: 32px; }
+.poem-card { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-block: 10px; padding: 12px; background: white; border: 1px solid var(--demo-border); border-radius: 12px; line-height: 2; text-align: center; }
+.sadr-part, .ajz-part { padding: 8px; }
+.ajz-part { border-right: 1px solid var(--demo-border); }
+.poem-explanation h2 { margin-top: 0; color: var(--demo-accent); }
+.explanation-part { margin-top: 16px; padding: 18px; background: #faf7f2; border: 1px solid var(--demo-border); border-radius: 12px; }
+.explanation-part h3 { margin-top: 0; color: var(--demo-accent); }
+.preserve-lines { white-space: pre-wrap; line-height: 1.9; }
+.poet-list ul, .poet-poems ul { columns: 2; column-gap: 40px; padding-inline-start: 24px; }
+.poet-list li, .poet-poems li { break-inside: avoid; margin-block: 7px; line-height: 1.8; }
+.poet-list a, .poet-poems a { color: var(--demo-accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.poet-biography { line-height: 1.9; }
+.poem-total { text-align: center; }
+.breadcrumb { font-size: 14px; }
+.breadcrumb a { color: var(--demo-accent); }
+.site-footer { padding-block: 22px; border-top: 1px solid var(--demo-border); text-align: center; color: var(--demo-muted); }
+.pagefind-filters { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.normalized-search-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: pre-wrap; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+@media (max-width: 700px) {
+  .site-header, .site-footer, .demo-main.page-container { width: min(100% - 24px, 1120px); }
+  .site-header { align-items: flex-start; flex-direction: column; gap: 12px; padding-block: 16px; }
+  .site-header nav { gap: 14px; }
+  .demo-main.page-container { padding-block: 22px 48px; }
+  .search-hero { margin-top: 12px; }
+  .search-form { padding: 15px; }
+  .filter-grid { grid-template-columns: 1fr 1fr; }
+  .stats-row { margin-block: 20px 30px; }
+  .stats-row div { gap: 6px; padding: 10px 14px; }
+  .results-section, .era-overview, .poet-biography, .poem-explanation, .poet-poems { padding: 16px; }
+  .poem-card { grid-template-columns: 1fr; gap: 2px; padding: 9px; }
+  .ajz-part { border-right: 0; border-top: 1px solid var(--demo-border); }
+  .poet-list ul, .poet-poems ul { columns: 1; }
+}

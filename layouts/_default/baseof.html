@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="تصفح دواوين الشعر العربي وابحث في القصائد والشعراء والعصور والبحور والقوافي.">
+  <title>{{ if .Title }}{{ .Title }} — {{ end }}{{ .Site.Title }}</title>
+  <link rel="stylesheet" href="{{ "css/style.css" | relURL }}">
+  <link rel="stylesheet" href="{{ "css/demo.css" | relURL }}">
+  {{ block "head" . }}{{ end }}
+</head>
+<body class="light-mode static-demo">
+  <header class="site-header">
+    <a class="brand" href="{{ "" | relURL }}">ديوان الشعر العربي</a>
+    <nav aria-label="التنقل الرئيسي">
+      <a href="{{ "" | relURL }}">الرئيسية والبحث</a>
+      <a href="{{ "era/" | relURL }}">العصور</a>
+    </nav>
+  </header>
+  <main class="page-container demo-main">
+    {{ block "main" . }}{{ end }}
+  </main>
+  <footer class="site-footer"><p>نموذج تجريبي ثابت مبني من بيانات الشعر.</p></footer>
+  {{ block "scripts" . }}{{ end }}
+</body>
+</html>

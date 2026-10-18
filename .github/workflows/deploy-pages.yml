@@ -1,0 +1,81 @@
+name: Deploy Pages (release artifact)
+
+# Publishes the PREBUILT site archive from a GitHub Release — no CI build of hugo.
+# Expected asset name (exact): public-final.tar.gz
+# The archive contains public-final/* at its top level; we strip one component.
+# Measured locally: archive 343,831,810 B; extracted raw 788,289,048 B (75% of the
+# 1 GB Pages artifact cap) — the whole job should stay far below 10 minutes.
+#
+# Usage:
+#   - Use the "Run workflow" button and provide the release tag (e.g. site-v1),
+#   - or push to main, which deploys the tag in a repository variable DEFAULT_RELEASE_TAG
+#     if it exists (fallback: latest release).
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag that carries public-final.tar.gz"
+        required: true
+        default: "site-v1"
+      expected_sha256:
+        description: "SHA-256 of public-final.tar.gz (tolerance check before deploy)"
+        required: true
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download site archive from release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_INPUT: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          TAG="${TAG_INPUT:-$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name)}"
+          echo "Using release tag: $TAG"
+          gh release download "$TAG" --repo "${{ github.repository }}" \
+            --pattern "public-final.tar.gz" --clobber
+          test -s public-final.tar.gz || { echo "asset missing"; exit 1; }
+
+      - name: Verify archive checksum
+        env:
+          EXPECTED_SHA256: ${{ inputs.expected_sha256 }}
+        run: |
+          set -euo pipefail
+          ACTUAL=$(sha256sum public-final.tar.gz | cut -d" " -f1)
+          echo "actual:   $ACTUAL"
+          if [ -n "${EXPECTED_SHA256:-}" ] && [ "$ACTUAL" != "$EXPECTED_SHA256" ]; then
+            echo "::error::SHA-256 mismatch (expected $EXPECTED_SHA256)"; exit 1
+          fi
+
+      - name: Extract archive
+        run: |
+          set -euo pipefail
+          mkdir -p site
+          tar -xzf public-final.tar.gz -C site --strip-components=1
+          test -f site/index.html || test -d site/poem || { echo "unexpected layout"; exit 1; }
+
+      - name: Freeze config pages
+        uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

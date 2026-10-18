@@ -1,0 +1,15 @@
+baseURL = "https://smsmy.github.io/poetry-site/"
+locale = "ar"
+uglyURLs = true
+defaultContentLanguage = "ar"
+title = "ديوان الشعر العربي"
+enableRobotsTXT = true
+disableKinds = ["taxonomy", "term", "RSS", "section"]
+paginate = 100
+
+[permalinks]
+poem = "/poem/:slug/"
+poet = "/poet/:slug/"
+
+[params]
+normalizedSearch = false

@@ -1,0 +1,31 @@
+{{ define "main" }}
+<article class="poem-page" itemscope itemtype="https://schema.org/CreativeWork">
+  <p class="breadcrumb"><a href="{{ "" | relURL }}">الرئيسية</a> / القصائد</p>
+  <section class="poem-content">
+    <h1 class="poem-title-main" itemprop="headline">{{ .Title }}</h1>
+    <h2 class="poem-author"><a href="{{ printf "poet/%d.html" .Params.poetId | relURL }}">{{ .Params.poet }}</a></h2>
+    <div class="poem-meta">
+      {{ with .Params.era }}<span>{{ . }}</span>{{ end }}
+      {{ with .Params.meter }}<span>البحر: {{ . }}</span>{{ end }}
+      {{ with .Params.rhymeLabel }}<span>القافية: {{ . }}</span>{{ else }}{{ with $.Params.rhyme }}<span>القافية: {{ . }}</span>{{ end }}{{ end }}
+      {{ if gt .Params.verseCount 0 }}<span>عدد الأبيات: {{ .Params.verseCount }}</span>{{ end }}
+    </div>
+    <div class="pagefind-filters" aria-hidden="true">
+      <span data-pagefind-filter="poet">{{ .Params.poet }}</span>
+      {{ with .Params.era }}<span data-pagefind-filter="era">{{ . }}</span>{{ end }}
+      {{ with .Params.meter }}<span data-pagefind-filter="meter">{{ . }}</span>{{ end }}
+      {{ with .Params.rhyme }}<span data-pagefind-filter="rhyme">{{ . }}</span>{{ end }}
+    </div>
+    <div class="poem-display-area" data-pagefind-body itemprop="text">{{ .Params.poemHtml | safeHTML }}</div>
+    {{ if or .Params.literary .Params.vocabulary .Params.generalExplanation }}
+      <section class="poem-explanation" aria-labelledby="explanation-heading">
+        <h2 id="explanation-heading">شرح القصيدة</h2>
+        {{ with .Params.literary }}<section class="explanation-part"><h3>إضاءة أدبية</h3><p class="preserve-lines">{{ . }}</p></section>{{ end }}
+        {{ with .Params.vocabulary }}<section class="explanation-part"><h3>معاني المفردات</h3><p class="preserve-lines">{{ . }}</p></section>{{ end }}
+        {{ with .Params.generalExplanation }}<section class="explanation-part"><p class="preserve-lines">{{ . }}</p></section>{{ end }}
+        <p class="explanation-note">الشرح مولّد آليًا للاستئناس، ولا يُعد تحقيقًا أدبيًا.</p>
+      </section>
+    {{ end }}
+  </section>
+</article>
+{{ end }}

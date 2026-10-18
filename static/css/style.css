@@ -1,0 +1,1322 @@
+/* --- 1. الإعدادات العامة والمتغيرات --- */
+:root {
+    --primary-font: 'Amiri', serif;
+    --secondary-font: 'IBM Plex Sans Arabic', sans-serif;
+    
+    /* متغيرات الوضع الفاتح */
+    --light-bg: #f8f6f3;
+    --light-text: #2c2c2c;
+    --light-card: #ffffff;
+    --light-border: #e0d9cd;
+    --light-primary: #8b4513;
+    --light-secondary: #7e6c5a;
+    --light-accent: #f5f2ed;
+    --light-shadow: rgba(139, 69, 19, 0.1);
+
+    /* متغيرات الوضع المظلم */
+    --dark-bg: #1a1a1c;
+    --dark-text: #e8e8ea;
+    --dark-card: #2a2a2c;
+    --dark-border: #404042;
+    --dark-primary: #d4aa7d;
+    --dark-secondary: #a09386;
+    --dark-accent: #333335;
+    --dark-shadow: rgba(0, 0, 0, 0.3);
+    
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --border-radius: 12px;
+    --shadow-light: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* --- الإعدادات العامة والتصميم --- */
+* {
+    box-sizing: border-box;
+}
+
+body { 
+    direction: rtl; 
+    font-family: var(--secondary-font); 
+    margin: 0; 
+    line-height: 1.8; 
+    transition: background-color var(--transition), color var(--transition);
+    font-size: 16px;
+}
+
+.light-mode { 
+    background-color: var(--light-bg); 
+    color: var(--light-text); 
+}
+
+.dark-mode { 
+    background-color: var(--dark-bg); 
+    color: var(--dark-text); 
+}
+
+.page-container, header > .container { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    padding: 0 24px; 
+}
+
+main { 
+    padding: 60px 0; 
+    min-height: calc(100vh - 200px);
+}
+
+a { 
+    text-decoration: none; 
+    transition: all var(--transition); 
+}
+
+h1, h2, h3, h4 { 
+    font-family: var(--primary-font); 
+    font-weight: 700;
+    margin: 0 0 20px 0;
+}
+
+.light-mode h1, .light-mode h2, .light-mode h3, .light-mode h4 { 
+    color: var(--light-primary); 
+}
+
+.dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode h4 { 
+    color: var(--dark-primary); 
+}
+
+.light-mode a { 
+    color: var(--light-primary); 
+}
+
+.dark-mode a { 
+    color: var(--dark-primary); 
+}
+
+.light-mode a:hover { 
+    color: #654321; 
+}
+
+.dark-mode a:hover { 
+    color: #e6c08a; 
+}
+
+/* --- الهيدر والبحث --- */
+header { 
+    padding: 20px 0; 
+    border-bottom: 1px solid; 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000; 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.light-mode header { 
+    background-color: rgba(248, 246, 243, 0.9); 
+    border-color: var(--light-border); 
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode header { 
+    background-color: rgba(26, 26, 28, 0.9); 
+    border-color: var(--dark-border); 
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+}
+
+header .container { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    gap: 30px; 
+}
+
+header .logo a { 
+    font-family: var(--primary-font); 
+    font-size: 36px; 
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--light-primary), #654321);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dark-mode header .logo a {
+    background: linear-gradient(135deg, var(--dark-primary), #e6c08a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+header nav { 
+    display: flex; 
+    gap: 30px; 
+}
+
+header .nav-link { 
+    font-weight: 600; 
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all var(--transition);
+}
+
+.light-mode header .nav-link:hover {
+    background-color: var(--light-accent);
+    transform: translateY(-2px);
+}
+
+.dark-mode header .nav-link:hover {
+    background-color: var(--dark-accent);
+    transform: translateY(-2px);
+}
+
+.search-container { 
+    flex-grow: 1; 
+    max-width: 400px; 
+}
+
+.search-container form { 
+    display: flex;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+}
+
+.search-input { 
+    width: 100%; 
+    border: 1px solid; 
+    padding: 12px 16px; 
+    border-radius: 0 var(--border-radius) var(--border-radius) 0; 
+    font-family: var(--secondary-font); 
+    transition: all var(--transition);
+    font-size: 16px;
+    border-left: none;
+}
+
+.search-button { 
+    border: 1px solid; 
+    border-right: none; 
+    padding: 0 16px; 
+    border-radius: var(--border-radius) 0 0 var(--border-radius); 
+    cursor: pointer; 
+    font-size: 18px; 
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.light-mode .search-input { 
+    background-color: #fff; 
+    border-color: var(--light-border); 
+    color: var(--light-text);
+}
+
+.light-mode .search-input:focus {
+    outline: none;
+    border-color: var(--light-primary);
+    box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+}
+
+.dark-mode .search-input { 
+    background-color: var(--dark-card); 
+    border-color: var(--dark-border); 
+    color: var(--dark-text); 
+}
+
+.dark-mode .search-input:focus {
+    outline: none;
+    border-color: var(--dark-primary);
+    box-shadow: 0 0 0 3px rgba(212, 170, 125, 0.1);
+}
+
+.light-mode .search-button { 
+    background: var(--light-primary); 
+    border-color: var(--light-primary);
+    color: white;
+}
+
+.light-mode .search-button:hover {
+    background: #654321;
+    transform: scale(1.05);
+}
+
+.dark-mode .search-button { 
+    background: var(--dark-primary); 
+    border-color: var(--dark-primary);
+    color: var(--dark-bg);
+}
+
+.dark-mode .search-button:hover {
+    background: #e6c08a;
+    transform: scale(1.05);
+}
+
+#theme-toggle { 
+    background: none; 
+    border: none; 
+    font-size: 24px; 
+    cursor: pointer; 
+    line-height: 0; 
+    padding: 12px;
+    border-radius: 50%;
+    transition: all var(--transition);
+}
+
+.light-mode #theme-toggle:hover {
+    background-color: var(--light-accent);
+    transform: rotate(180deg);
+}
+
+.dark-mode #theme-toggle:hover {
+    background-color: var(--dark-accent);
+    transform: rotate(180deg);
+}
+
+/* --- الفوتر --- */
+footer { 
+    text-align: center; 
+    padding: 40px 0; 
+    margin-top: 80px; 
+}
+
+.light-mode footer { 
+    background: linear-gradient(135deg, #2e241b, #3a2f26); 
+    color: #f0e9df; 
+    border-top: 4px solid var(--light-primary); 
+}
+
+.dark-mode footer { 
+    background: linear-gradient(135deg, #121212, #1a1a1a); 
+    color: #a09386; 
+    border-top: 4px solid var(--dark-primary); 
+}
+
+footer .open-source-msg { 
+    margin-bottom: 20px; 
+    font-size: 16px; 
+}
+
+footer .open-source-msg a { 
+    text-decoration: underline; 
+    transition: all var(--transition);
+}
+
+.light-mode footer a { 
+    color: #fff; 
+}
+
+.light-mode footer a:hover { 
+    color: var(--light-accent); 
+}
+
+.dark-mode footer a { 
+    color: var(--dark-primary); 
+}
+
+.dark-mode footer a:hover { 
+    color: #e6c08a; 
+}
+
+/* --- الصفحة الرئيسية والعصور --- */
+.page-title { 
+    text-align: center; 
+    font-size: 48px; 
+    margin-bottom: 60px;
+    background: linear-gradient(135deg, var(--light-primary), #654321);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dark-mode .page-title {
+    background: linear-gradient(135deg, var(--dark-primary), #e6c08a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.era-section { 
+    margin-bottom: 60px; 
+}
+
+.era-title { 
+    font-size: 36px; 
+    border-bottom: 3px solid; 
+    padding-bottom: 15px; 
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.era-title::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    right: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--light-primary), transparent);
+}
+
+.dark-mode .era-title::after {
+    background: linear-gradient(90deg, var(--dark-primary), transparent);
+}
+
+.light-mode .era-title { 
+    border-color: var(--light-border); 
+}
+
+.dark-mode .era-title { 
+    border-color: var(--dark-border); 
+}
+
+.poets-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+    gap: 20px; 
+}
+
+.poet-card { 
+    text-align: center; 
+    font-weight: 600; 
+    padding: 24px; 
+    border-radius: var(--border-radius); 
+    border: 1px solid; 
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.poet-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--light-primary), transparent);
+    transform: scaleX(0);
+    transition: transform var(--transition);
+}
+
+.dark-mode .poet-card::before {
+    background: linear-gradient(90deg, var(--dark-primary), transparent);
+}
+
+.poet-card:hover::before {
+    transform: scaleX(1);
+}
+
+.light-mode .poet-card { 
+    background-color: var(--light-card); 
+    border-color: var(--light-border);
+    box-shadow: var(--shadow-light);
+}
+
+.dark-mode .poet-card { 
+    background-color: var(--dark-card); 
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px var(--dark-shadow);
+}
+
+.poet-card:hover { 
+    transform: translateY(-8px) scale(1.02); 
+    box-shadow: var(--shadow-hover);
+}
+
+.view-all-container { 
+    text-align: left; 
+    margin-top: 30px; 
+}
+
+.view-all-link, .back-link { 
+    font-weight: bold;
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    display: inline-block;
+    transition: all var(--transition);
+}
+
+.light-mode .view-all-link, .light-mode .back-link {
+    background-color: var(--light-accent);
+    border: 2px solid var(--light-primary);
+}
+
+.light-mode .view-all-link:hover, .light-mode .back-link:hover {
+    background-color: var(--light-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.dark-mode .view-all-link, .dark-mode .back-link {
+    background-color: var(--dark-accent);
+    border: 2px solid var(--dark-primary);
+}
+
+.dark-mode .view-all-link:hover, .dark-mode .back-link:hover {
+    background-color: var(--dark-primary);
+    color: var(--dark-bg);
+    transform: translateY(-2px);
+}
+
+.back-link { 
+    display: block; 
+    text-align: center; 
+    margin-bottom: 40px; 
+}
+
+.eras-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+    gap: 24px; 
+}
+
+.era-card { 
+    display: flex; 
+    flex-direction: column; 
+    text-align: center; 
+    padding: 32px; 
+    border-radius: var(--border-radius); 
+    border: 1px solid; 
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.era-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(139, 69, 19, 0.05));
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.dark-mode .era-card::before {
+    background: linear-gradient(135deg, transparent, rgba(212, 170, 125, 0.05));
+}
+
+.era-card:hover::before {
+    opacity: 1;
+}
+
+.light-mode .era-card { 
+    background-color: var(--light-card); 
+    border-color: var(--light-border);
+    box-shadow: var(--shadow-light);
+}
+
+.dark-mode .era-card { 
+    background-color: var(--dark-card); 
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px var(--dark-shadow);
+}
+
+.era-card:hover { 
+    transform: translateY(-8px) scale(1.02); 
+    box-shadow: var(--shadow-hover);
+}
+
+.era-name { 
+    font-size: 32px; 
+    font-weight: bold; 
+    font-family: var(--primary-font); 
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.era-count { 
+    font-size: 18px; 
+    padding: 8px 16px; 
+    border-radius: 25px; 
+    align-self: center;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+}
+
+.light-mode .era-count { 
+    background: linear-gradient(135deg, var(--light-primary), #654321);
+    color: white;
+}
+
+.dark-mode .era-count { 
+    background: linear-gradient(135deg, var(--dark-primary), #e6c08a);
+    color: var(--dark-bg);
+}
+
+/* --- صفحة الشاعر --- */
+.poet-info { 
+    text-align: center; 
+    padding: 40px; 
+    margin-bottom: 50px; 
+    border-radius: var(--border-radius); 
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+}
+
+.poet-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, var(--light-primary), #654321, var(--light-primary));
+}
+
+.dark-mode .poet-info::before {
+    background: linear-gradient(90deg, var(--dark-primary), #e6c08a, var(--dark-primary));
+}
+
+.light-mode .poet-info { 
+    background: var(--light-card); 
+    border-color: var(--light-border);
+    box-shadow: var(--shadow-light);
+}
+
+.dark-mode .poet-info { 
+    background: var(--dark-card); 
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px var(--dark-shadow);
+}
+
+.poet-info h1 { 
+    font-size: 52px; 
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--light-primary), #654321);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dark-mode .poet-info h1 {
+    background: linear-gradient(135deg, var(--dark-primary), #e6c08a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.poet-bio {
+    max-width: 700px; 
+    margin: 20px auto 0; 
+    font-size: 18px; 
+    line-height: 2.2;
+    text-align: justify;
+}
+
+.poet-era-badge { 
+    font-size: 20px; 
+    padding: 8px 20px;
+    border-radius: 25px;
+    display: inline-block;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.light-mode .poet-era-badge { 
+    background: linear-gradient(135deg, var(--light-accent), #f0e9df);
+    color: var(--light-secondary);
+    border: 2px solid var(--light-border);
+}
+
+.dark-mode .poet-era-badge { 
+    background: linear-gradient(135deg, var(--dark-accent), #2a2a2c);
+    color: var(--dark-secondary);
+    border: 2px solid var(--dark-border);
+}
+
+.poet-poems-title { 
+    text-align: center; 
+    font-size: 40px; 
+    margin: 60px 0 40px 0;
+    position: relative;
+}
+
+.poet-poems-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--light-primary), transparent);
+    border-radius: 2px;
+}
+
+.dark-mode .poet-poems-title::after {
+    background: linear-gradient(90deg, transparent, var(--dark-primary), transparent);
+}
+
+.poems-list-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); 
+    gap: 24px; 
+}
+
+a.poem-card { 
+    padding: 28px; 
+    border: 1px solid; 
+    border-radius: var(--border-radius); 
+    transition: all var(--transition); 
+    display: flex; 
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+a.poem-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--light-primary), transparent);
+    transform: scaleX(0);
+    transition: transform var(--transition);
+}
+
+.dark-mode a.poem-card::before {
+    background: linear-gradient(90deg, var(--dark-primary), transparent);
+}
+
+a.poem-card:hover::before {
+    transform: scaleX(1);
+}
+
+.light-mode a.poem-card { 
+    background: var(--light-card); 
+    border-color: var(--light-border);
+    box-shadow: var(--shadow-light);
+}
+
+.dark-mode a.poem-card { 
+    background: var(--dark-card); 
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px var(--dark-shadow);
+}
+
+a.poem-card:hover { 
+    transform: translateY(-8px) scale(1.02); 
+    box-shadow: var(--shadow-hover);
+}
+
+.poem-card-title { 
+    font-size: 26px; 
+    margin: 0 0 20px 0; 
+    flex-grow: 1;
+    font-family: var(--primary-font);
+    line-height: 1.4;
+}
+
+.poem-card-meta { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 15px; 
+    border-top: 2px dashed; 
+    padding-top: 16px;
+    font-weight: 500;
+}
+
+.light-mode .poem-card-meta { 
+    border-color: var(--light-border); 
+    color: var(--light-secondary); 
+}
+
+.dark-mode .poem-card-meta { 
+    border-color: var(--dark-border); 
+    color: var(--dark-secondary); 
+}
+
+/* --- صفحة القصيدة --- */
+.poem-page {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ===>>> [محدث] تنسيق عنوان القصيدة الرئيسي (مفرد أو مقسوم) <<<=== */
+
+/* للعنوان المكون من شطر واحد (بدون فاصل) */
+.poem-title-main-single {
+    font-size: 36px;
+    font-family: var(--primary-font);
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+    margin: 20px 0 30px 0;
+    background: linear-gradient(135deg, var(--light-primary), #654321);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.dark-mode .poem-title-main-single {
+    background: linear-gradient(135deg, var(--dark-primary), #e6c08a);
+}
+
+/* حاوية العنوان المقسم إلى شطرين */
+.poem-title-card {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    margin: 20px 0 30px 0;
+    padding: 24px;
+    border-radius: var(--border-radius);
+    border: 1px solid;
+}
+.light-mode .poem-title-card {
+    background-color: var(--light-accent);
+    border-color: var(--light-border);
+}
+.dark-mode .poem-title-card {
+    background-color: var(--dark-accent);
+    border-color: var(--dark-border);
+}
+
+/* شطري العنوان (الصدر والعجز) */
+.sadr-title-part, .ajz-title-part {
+    font-family: var(--primary-font);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.6;
+    flex-basis: 0;
+    flex-grow: 1;
+}
+.light-mode .sadr-title-part, .light-mode .ajz-title-part {
+    color: var(--light-primary);
+}
+.dark-mode .sadr-title-part, .dark-mode .ajz-title-part {
+    color: var(--dark-primary);
+}
+
+.sadr-title-part { text-align: right; }
+.ajz-title-part { text-align: left; }
+
+/* تعديلات تجاوبية للعنوان */
+@media (max-width: 768px) {
+    .poem-title-main-single {
+        font-size: 28px;
+    }
+    .poem-title-card {
+        flex-direction: column;
+        gap: 10px;
+        padding: 16px;
+    }
+    .sadr-title-part, .ajz-title-part {
+        text-align: center;
+        font-size: 26px;
+        width: 100%;
+    }
+}
+
+
+.poem-author { 
+    font-size: 32px; 
+    text-align: center; 
+    margin-bottom: 40px; 
+    font-weight: normal;
+    font-family: var(--primary-font);
+}
+
+.poem-author a {
+    transition: all var(--transition);
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+}
+
+.light-mode .poem-author a:hover {
+    background-color: var(--light-accent);
+    transform: translateY(-2px);
+}
+
+.dark-mode .poem-author a:hover {
+    background-color: var(--dark-accent);
+    transform: translateY(-2px);
+}
+
+.poem-meta-box { 
+    display: flex; 
+    justify-content: center; 
+    gap: 30px; 
+    padding: 28px; 
+    margin: 40px auto 60px; 
+    border-radius: var(--border-radius); 
+    max-width: 600px;
+    box-shadow: var(--shadow-light);
+}
+
+.light-mode .poem-meta-box { 
+    background: linear-gradient(135deg, #2e241b, #3a2f26); 
+    color: #f0e9df; 
+}
+
+.dark-mode .poem-meta-box { 
+    background: linear-gradient(135deg, var(--dark-accent), #2a2a2c); 
+    color: var(--dark-text);
+    box-shadow: 0 4px 20px var(--dark-shadow);
+}
+
+.meta-item { 
+    text-align: center; 
+}
+
+.meta-label { 
+    display: block; 
+    font-size: 15px; 
+    font-weight: 600; 
+    opacity: 0.8; 
+    margin-bottom: 8px;
+}
+
+.meta-value { 
+    display: block; 
+    font-family: var(--primary-font); 
+    font-size: 26px; 
+    font-weight: 700; 
+}
+/* تنسيق بطاقة عرض البيت الشعري (من دالة format_poem) */
+.poem-display-area .poem-card, .poem-display-area .c {
+    background-color: var(--light-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    padding: 20px;
+    margin: 10px 0;
+    transition: all var(--transition);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.poem-display-area .poem-card:hover, .poem-display-area .c:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.sadr-part, .ajz-part, .s, .a {
+    font-size: 26px;
+    font-family: var(--primary-font);
+    line-height: 1.8;
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color var(--transition);
+}
+
+.sadr-part, .s {
+    text-align: right;
+}
+
+.ajz-part, .a {
+    text-align: left;
+}
+
+.poem-display-area .poem-card:hover .sadr-part,
+.poem-display-area .c:hover .s,
+.poem-display-area .poem-card:hover .ajz-part,
+.poem-display-area .c:hover .a {
+    background-color: rgba(139, 69, 19, 0.05);
+}
+
+@media (max-width: 768px) {
+    .poem-display-area .poem-card, .poem-display-area .c {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .sadr-part, .ajz-part, .s, .a {
+        text-align: center;
+        width: 100%;
+    }
+}
+
+.dark-mode .poem-display-area .poem-card, .poem-display-area .c {
+    background-color: var(--dark-card);
+    box-shadow: 0 4px 20px var(--dark-shadow);
+}
+
+.dark-mode .poem-display-area .poem-card:hover, .poem-display-area .c:hover {
+    box-shadow: 0 6px 30px var(--dark-shadow);
+}
+
+.dark-mode .sadr-part, .dark-mode .ajz-part, .a {
+    color: var(--dark-text);
+}
+
+.dark-mode .poem-display-area .poem-card:hover .sadr-part,
+.dark-mode .poem-display-area .c:hover .s,
+.poem-display-area .c:hover .s,
+.dark-mode .poem-display-area .poem-card:hover .ajz-part,
+.poem-display-area .c:hover .a {
+    background-color: rgba(212, 170, 125, 0.1);
+}
+
+/* شرح القصيدة */
+.poem-explanation {
+    margin-top: 48px;
+    padding: 28px;
+    border: 1px solid;
+    border-radius: var(--border-radius);
+    line-height: 2;
+}
+
+.light-mode .poem-explanation,
+.light-mode .explanation-part {
+    background: var(--light-card);
+    border-color: var(--light-border);
+    box-shadow: var(--shadow-light);
+}
+
+.dark-mode .poem-explanation,
+.dark-mode .explanation-part {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px var(--dark-shadow);
+}
+
+.poem-explanation > h2 {
+    margin: 0 0 22px;
+    font-size: 30px;
+}
+
+.explanation-part {
+    margin-top: 18px;
+    padding: 20px 24px;
+    border: 1px solid;
+    border-radius: 12px;
+}
+
+.explanation-entry + .explanation-entry {
+    margin-top: 18px;
+}
+
+.explanation-part h3 {
+    margin: 0 0 10px;
+    font-size: 23px;
+}
+
+.explanation-text {
+    font-size: 19px;
+    white-space: normal;
+}
+
+.explanation-note {
+    margin: 18px 0 0;
+    font-size: 14px;
+    opacity: 0.72;
+}
+
+/* ===>>> التنسيقات الجديدة والمحسنة لصفحة البحث <<<=== */
+.search-results-section {
+    margin-bottom: 60px;
+    padding: 40px;
+    border-radius: var(--border-radius);
+    border: 1px solid;
+    box-shadow: var(--shadow-light);
+}
+
+.light-mode .search-results-section {
+    background-color: var(--light-card);
+    border-color: var(--light-border);
+}
+
+.dark-mode .search-results-section {
+    background-color: var(--dark-card);
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px var(--dark-shadow);
+}
+
+.results-subtitle {
+    font-size: 36px;
+    padding-bottom: 20px;
+    margin: 0 0 30px 0;
+    border-bottom: 3px solid;
+    position: relative;
+}
+
+.results-subtitle::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    right: 0;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--light-primary), transparent);
+}
+
+.dark-mode .results-subtitle::after {
+    background: linear-gradient(90deg, var(--dark-primary), transparent);
+}
+
+.light-mode .results-subtitle { 
+    border-color: var(--light-border); 
+}
+
+.dark-mode .results-subtitle { 
+    border-color: var(--dark-border); 
+}
+
+.no-results { 
+    text-align: center; 
+    font-size: 20px; 
+    padding: 60px 0; 
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* تنسيق نتائج الشعراء في البحث */
+.search-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.poet-link-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    transition: all var(--transition);
+    border: 1px solid transparent;
+}
+
+.light-mode .poet-link-item { 
+    background-color: var(--light-accent);
+    border-color: var(--light-border);
+}
+
+.dark-mode .poet-link-item { 
+    background-color: var(--dark-accent);
+    border-color: var(--dark-border);
+}
+
+.poet-link-item:hover { 
+    transform: translateX(8px) scale(1.02);
+    box-shadow: var(--shadow-light);
+}
+
+.light-mode .poet-link-item:hover {
+    border-color: var(--light-primary);
+}
+
+.dark-mode .poet-link-item:hover {
+    border-color: var(--dark-primary);
+}
+
+.poet-link-item .poet-name { 
+    font-weight: 600; 
+    font-size: 20px;
+    font-family: var(--primary-font);
+}
+
+.poet-link-item .poet-era-badge { 
+    font-size: 15px; 
+    padding: 6px 14px; 
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.light-mode .poet-link-item .poet-era-badge { 
+    background: linear-gradient(135deg, var(--light-primary), #654321);
+    color: white;
+}
+
+.dark-mode .poet-link-item .poet-era-badge { 
+    background: linear-gradient(135deg, var(--dark-primary), #e6c08a);
+    color: var(--dark-bg);
+}
+
+/* تنسيق نتائج القصائد في البحث */
+.poem-search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.poem-search-item {
+    display: block;
+    padding: 28px;
+    border: 1px solid;
+    border-radius: var(--border-radius);
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.poem-search-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--light-primary), transparent);
+    transform: scaleX(0);
+    transition: transform var(--transition);
+}
+
+.dark-mode .poem-search-item::before {
+    background: linear-gradient(90deg, var(--dark-primary), transparent);
+}
+
+.poem-search-item:hover::before {
+    transform: scaleX(1);
+}
+
+.light-mode .poem-search-item { 
+    background: var(--light-accent); 
+    border-color: var(--light-border);
+    box-shadow: var(--shadow-light);
+}
+
+.dark-mode .poem-search-item { 
+    background: var(--dark-accent); 
+    border-color: var(--dark-border);
+    box-shadow: 0 4px 20px var(--dark-shadow);
+}
+
+.poem-search-item:hover { 
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: var(--shadow-hover);
+}
+
+.poem-search-title { 
+    font-size: 24px; 
+    margin: 0 0 8px 0;
+    font-family: var(--primary-font);
+    font-weight: 700;
+}
+
+.poem-search-author { 
+    font-size: 18px; 
+    margin: 0 0 20px 0;
+    font-weight: 600;
+}
+
+.light-mode .poem-search-author { 
+    color: var(--light-secondary); 
+}
+
+.dark-mode .poem-search-author { 
+    color: var(--dark-secondary); 
+}
+
+.poem-search-snippet {
+    margin: 0;
+    padding: 20px;
+    border-radius: 8px;
+    font-family: var(--primary-font);
+    font-size: 20px;
+    line-height: 2;
+    border: 1px solid;
+}
+
+.light-mode .poem-search-snippet { 
+    background-color: #fff;
+    border-color: var(--light-border);
+}
+
+.dark-mode .poem-search-snippet { 
+    background-color: #1c1c1e;
+    border-color: var(--dark-border);
+}
+
+.poem-search-snippet strong {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all var(--transition);
+}
+
+.light-mode .poem-search-snippet strong { 
+    color: var(--light-primary); 
+    background-color: #fffbe0;
+    border: 1px solid rgba(139, 69, 19, 0.2);
+}
+
+.dark-mode .poem-search-snippet strong { 
+    color: #fceec5; 
+    background-color: rgba(212, 170, 125, 0.2);
+    border: 1px solid rgba(212, 170, 125, 0.3);
+}
+
+/* تصميم متجاوب للموبايل */
+@media (max-width: 768px) {
+    header .container { 
+        flex-wrap: wrap; 
+        gap: 20px;
+    }
+    
+    header nav { 
+        order: 3; 
+        flex-basis: 100%; 
+        margin-top: 20px; 
+        justify-content: center; 
+    }
+    
+    .search-container { 
+        order: 2; 
+        flex-basis: 100%; 
+        max-width: none; 
+    }
+    
+    .page-title {
+        font-size: 36px;
+    }
+        
+    .poet-info h1 {
+        font-size: 40px;
+    }
+        
+    .poems-list-grid { 
+        grid-template-columns: 1fr; 
+    }
+    
+    .poets-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    
+    .eras-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .poem-meta-box {
+        flex-direction: column;
+        gap: 20px;
+        padding: 24px;
+    }
+    
+    .page-container {
+        padding: 0 16px;
+    }
+    
+    main {
+        padding: 40px 0;
+    }
+}
+
+/* Compact poem-markup aliases and visually hidden normalized search text. */
+.search-normalized{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.poem-display-area .c{margin:10px 0;padding:20px;background-color:var(--light-card);border-radius:var(--border-radius);box-shadow:var(--shadow-light);transition:all var(--transition);display:flex;flex-direction:row;justify-content:space-between;align-items:center}
+.poem-display-area .c:hover{transform:translateY(-5px);box-shadow:var(--shadow-hover)}
+.poem-display-area .s,.poem-display-area .a{display:block;flex:1;padding:8px;border-radius:8px;font-size:26px;font-family:var(--primary-font);line-height:1.8;transition:background-color var(--transition)}
+.poem-display-area .s{text-align:right}.poem-display-area .a{text-align:left}
+.poem-display-area .c:hover .s,.poem-display-area .c:hover .a{background-color:rgba(139,69,19,.05)}
+@media(max-width:768px){.poem-display-area .c{flex-direction:column;align-items:center}.poem-display-area .s,.poem-display-area .a{text-align:center;width:100%}}
+.dark-mode .poem-display-area .c{background-color:var(--dark-card);box-shadow:var(--shadow-dark)}
+.dark-mode .poem-display-area .c:hover{box-shadow:var(--shadow-hover)}
+.dark-mode .poem-display-area .s,.dark-mode .poem-display-area .a{color:var(--text-light)}
+
+/* Two-span compact hemistichs. */
+.poem-display-area .c>span{display:block;flex:1;padding:8px;border-radius:8px;font-size:26px;font-family:var(--primary-font);line-height:1.8;transition:background-color var(--transition)}
+.poem-display-area .c>span:first-child{text-align:right}.poem-display-area .c>span:last-child{text-align:left}
+.poem-display-area .c:hover>span{background-color:rgba(139,69,19,.05)}
+@media(max-width:768px){.poem-display-area .c>span{text-align:center!important;width:100%}}
+.dark-mode .poem-display-area .c>span{color:var(--text-light)}

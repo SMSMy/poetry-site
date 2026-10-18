@@ -1,0 +1,12 @@
+{{ define "main" }}
+<article class="poet-profile">
+  <p class="breadcrumb"><a href="{{ "" | relURL }}">الرئيسية</a> / الشعراء</p>
+  <header class="page-heading">
+    <h1>{{ .Title }}</h1>
+    {{ with .Params.era }}<p class="era-badge">{{ . }}</p>{{ end }}
+  </header>
+  {{ with .Params.info }}<section class="poet-biography"><h2>نبذة</h2><p class="preserve-lines">{{ . }}</p></section>{{ end }}
+  <p class="poem-total">عدد القصائد: {{ .Params.poemCount }}</p>
+  <section class="poet-poems">{{ .Params.poemCatalogHtml | safeHTML }}</section>
+</article>
+{{ end }}

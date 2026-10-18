@@ -1,0 +1,16 @@
+# Production search worker. Read-only; no import endpoints.
+# No secrets here — wrangler picks the account from `wrangler login`.
+# Deploy: npx wrangler deploy   (from this worker/ directory)
+name = "poetry-search"
+main = "index.mjs"
+compatibility_date = "2026-01-15"
+
+workers_dev = true
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "poetry-norm-contentless"
+database_id = "c6190992-49f0-4aff-a670-c4e0d77738c1"

@@ -1,0 +1,52 @@
+# ===== user-mandated exclusions (build data lives locally only) =====
+
+# trace/cache and pipeline data
+.cache/
+.wrangler/
+.d1-*/
+.playwright-cli/
+.tools/
+__pycache__/
+*.pyc
+
+# local giants: generated site trees, archives, source dumps
+public*/
+*.tar.gz
+*.zip
+*.tar
+
+# local sqlite sources / db state
+reconstruction.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
+.db/
+
+# reports that may reference entrance data or machine info
+*-report*.json
+report*.json
+*.log
+
+# source raw data folder (only generator scripts are tracked)
+json/
+txt/
+TXT/
+poetry_data/
+
+# credentials and server configs
+config.php
+.env
+.env.*
+*secret*
+*credentials*
+*_creds*
+
+# worker local state
+worker/.wrangler/
+worker/.dev.vars
+
+# OS / editor noise
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
