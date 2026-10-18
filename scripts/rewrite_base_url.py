@@ -23,7 +23,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 ATTRIBUTE_ATTRS = ("href", "src", "poster", "action", "formaction")
 # attribute = /path | attribute="/path" — never touches //host or http URLs
 URL_ATTR = re.compile(
-    r"\b(?:" + "|".join(ATTRIBUTE_ATTRS) + r")\s*=\s*(\"?)/(?!/)([^\"\\s>]*)",
+    r"\b(?P<attr>" + "|".join(ATTRIBUTE_ATTRS) + r")\s*=\s*(\"?)/(?!/)([^\"\\s>]*)",
     re.IGNORECASE,
 )
 LOC = re.compile(r"(<loc>)([^<]+)(</loc>)")
@@ -31,8 +31,9 @@ LOC = re.compile(r"(<loc>)([^<]+)(</loc>)")
 
 def rewrite_relative(text: str, prefix: str) -> str:
     def attr_replace(match: re.Match) -> str:
-        # group(1) = optional quote, group(2) = path after the leading '/'
-        return f'={match.group(1)}{prefix}/{match.group(2)}'
+        # named group shifts numeric indices: (attr)->1, (quote)->2, (path)->3
+        return (f"{match.group('attr')}={match.group(2) or ''}{prefix}"
+                f"/{match.group(3)}")
 
     return URL_ATTR.sub(attr_replace, text)
 
