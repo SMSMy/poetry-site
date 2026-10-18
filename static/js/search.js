@@ -71,6 +71,15 @@ function addOptions(select, values, firstLabel) {
   }
 }
 
+function currentFilters() {
+  const selected = {};
+  for (const [key, selector] of Object.entries(filterIds)) {
+    const value = document.querySelector(selector)?.value;
+    if (value) selected[key] = value;
+  }
+  return selected;
+}
+
 function clearResults() {
   resultList.replaceChildren();
 }

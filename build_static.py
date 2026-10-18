@@ -320,6 +320,7 @@ def generate(args) -> dict:
     root: Path = args.root.resolve()
     source: Path = args.source.resolve()
     base: Path = args.project.resolve()
+    no_explanations: bool = bool(getattr(args, "no_explanations", False))
     if not root.exists():
         raise RuntimeError(f"The output directory must already exist: {root}")
     if source == root or root in source.parents or source in root.parents:
@@ -613,9 +614,14 @@ def generate(args) -> dict:
     for row in poems_cursor:
         poem_id, poet_id, title, poem_text, h, meter, rhyme, rhyme_label, verses, ptype = row
         exp_parts: list[str] = []
-        while pending_exp is not None and int(pending_exp[0]) == int(poem_id):
-            exp_parts.append(str(pending_exp[1]))
-            pending_exp = next(exp_cursor, None)
+        if not no_explanations:
+            while pending_exp is not None and int(pending_exp[0]) == int(poem_id):
+                exp_parts.append(str(pending_exp[1]))
+                pending_exp = next(exp_cursor, None)
+        else:
+            # Skip explanation linkage entirely; keep the cursor untouched since
+            # no rows are consumed in this mode.
+            pass
         literary, vocabulary, general = ("", "", "")
         if exp_parts:
             # The PHP site shows each unique explanation separately. Keep the first for compact page data
@@ -664,6 +670,8 @@ def main() -> int:
     parser.add_argument("--project", type=Path, default=DEFAULT_PROJECT)
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    parser.add_argument("--no-explanations", dest="no_explanations", action="store_true",
+                        help="Build the full site without poem explanations (licensing undecided). Default keeps explanations.")
     args = parser.parse_args()
     for path in (args.project / "json_data", args.source / "_index.json", args.root):
         if not path.exists():
