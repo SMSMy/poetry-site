@@ -62,6 +62,12 @@ function cleanSnippet(html) {
 function addOptions(select, values, firstLabel) {
   const selectElement = document.querySelector(select);
   if (!selectElement) return;
+  if (firstLabel) {
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = firstLabel;
+    selectElement.append(defaultOption);
+  }
   const sorted = Object.keys(values || {}).sort((a, b) => a.localeCompare(b, "ar"));
   for (const value of sorted) {
     const option = document.createElement("option");
@@ -75,9 +81,41 @@ function currentFilters() {
   const selected = {};
   for (const [key, selector] of Object.entries(filterIds)) {
     const value = document.querySelector(selector)?.value;
-    if (value) selected[key] = value;
+    if (value && value !== "") selected[key] = value;
   }
   return selected;
+}
+
+async function resolvePagefindIndex() {
+  if (pagefind) return pagefind;
+  let lastError = null;
+  const candidates = [
+    new URL("../pagefind-catalog/pagefind.js", import.meta.url),
+    new URL("./pagefind-catalog/pagefind.js", import.meta.url),
+    new URL("/poetry-site/pagefind-catalog/pagefind.js", import.meta.url),
+  ];
+  for (const candidate of candidates) {
+    try {
+      const module = await import(candidate);
+      if (module && typeof module.search === "function") {
+        pagefind = module;
+        return pagefind;
+      }
+      lastError = new Error("pagefind module has no search() in " + candidate.href);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("pagefind index not found");
+}
+
+function emptyFiltersFor(module) {
+  if (!module || typeof module.filters !== "function") return {};
+  return module.filters().then(values => {
+    const selected = {};
+    for (const key of Object.keys(values || {})) selected[key] = [];
+    return selected;
+  }).catch(() => ({}));
 }
 
 function clearResults() {
@@ -102,8 +140,7 @@ function appendResult({ title, url, snippet }) {
 
 function renderPagefindResults(results, total) {
   status.textContent = total ? `عدد النتائج: ${total} — المعروض: ${results.length}` : "لا توجد نتائج مطابقة.";
-  for (const result of results) {
-    const data = result.data;
+  for (const data of results) {
     appendResult({
       title: data.meta?.title || "قصيدة",
       url: siteUrl(data.url),
@@ -146,8 +183,8 @@ async function runSearch() {
       }
       status.textContent = "تعذر الوصول إلى خدمة D1 — أرجعت إلى فهرس العناوين.";
     }
-    pagefind ||= await import(new URL("../pagefind-catalog/pagefind.js", import.meta.url));
-    const response = await pagefind.search(query || null, { filters: activeFilters });
+    const index = await resolvePagefindIndex();
+    const response = await index.search(query || null, { filters: activeFilters });
     const results = await Promise.all(response.results.slice(0, 30).map(result => result.data()));
     clearResults();
     renderPagefindResults(results, response.results.length);
