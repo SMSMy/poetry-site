@@ -6,8 +6,14 @@ name: Deploy Pages (release artifact)
 # Measured locally: archive 343,831,810 B; extracted raw 788,289,048 B (75% of the
 # 1 GB Pages artifact cap) — the whole job should stay far below 10 minutes.
 #
+# Every release tag owns one archive (the asset is downloaded without --clobber, so an
+# already-downloaded release is never overwritten locally); publishing a new archive
+# means publishing a NEW tag. Each build of the archive restores static/ from git HEAD
+# (scripts/archive_final.py --static-source head) and this workflow re-checks the same
+# files by SHA-256 after extraction, failing the deploy on any mismatch.
+#
 # Usage:
-#   - Use the "Run workflow" button and provide the release tag (e.g. site-v1),
+#   - Use the "Run workflow" button and provide the release tag (e.g., site-v1),
 #   - or push to main, which deploys the tag in a repository variable DEFAULT_RELEASE_TAG
 #     if it exists (fallback: latest release).
 
@@ -29,6 +35,15 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  # Static assets that must match the repository exactly (verified twice: by
+  # scripts/archive_final.py at pack time and here after extraction).
+  # Format: <path inside the archive>=<path in the repository>.
+  # Hugo copies static/* to the site root, so the archive layout has css/ and js/.
+  STATIC_FILES: |
+    css/style.css=static/css/style.css
+    js/search.js=static/js/search.js
+
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -40,6 +55,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout repository (for the static-asset comparison)
+        uses: actions/checkout@v4
+
       - name: Download site archive from release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -48,17 +66,22 @@ jobs:
           set -euo pipefail
           TAG="${TAG_INPUT:-$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name)}"
           echo "Using release tag: $TAG"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          # No --clobber: a tag's asset is downloaded once and stays untouched.
           gh release download "$TAG" --repo "${{ github.repository }}" \
-            --pattern "public-final.tar.gz" --clobber
-          test -s public-final.tar.gz || { echo "asset missing"; exit 1; }
+            --pattern "public-final.tar.gz"
+          # Keep a tag-based name locally so several archives can be inspected side by side.
+          mv public-final.tar.gz "public-final-${TAG}.tar.gz"
+          test -s "public-final-${TAG}.tar.gz" || { echo "asset missing"; exit 1; }
 
       - name: Verify archive checksum
         env:
           EXPECTED_SHA256: ${{ inputs.expected_sha256 }}
         run: |
           set -euo pipefail
-          ACTUAL=$(sha256sum public-final.tar.gz | cut -d" " -f1)
+          ACTUAL=$(sha256sum "public-final-${TAG}.tar.gz" | cut -d" " -f1)
           echo "actual:   $ACTUAL"
+          echo "release:  $TAG"
           if [ -n "${EXPECTED_SHA256:-}" ] && [ "$ACTUAL" != "$EXPECTED_SHA256" ]; then
             echo "::error::SHA-256 mismatch (expected $EXPECTED_SHA256)"; exit 1
           fi
@@ -67,8 +90,29 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p site
-          tar -xzf public-final.tar.gz -C site --strip-components=1
+          tar -xzf "public-final-${TAG}.tar.gz" -C site --strip-components=1
           test -f site/index.html || test -d site/poem || { echo "unexpected layout"; exit 1; }
+
+      - name: Verify static assets match repository HEAD
+        run: |
+          set -euo pipefail
+          # The archive must ship the same static assets as the commit being deployed;
+          # a stale archive (built from an older HEAD) fails here instead of going live.
+          status=0
+          while IFS= read -r pair; do
+            [ -n "$pair" ] || continue
+            archive_rel="${pair%%=*}"
+            repo_rel="${pair#*=}"
+            ARCHIVE_SHA=$(sha256sum "site/$archive_rel" | cut -d" " -f1)
+            REPO_SHA=$(sha256sum "$repo_rel" | cut -d" " -f1)
+            if [ "$ARCHIVE_SHA" = "$REPO_SHA" ]; then
+              echo "OK   $archive_rel <- $repo_rel $REPO_SHA"
+            else
+              echo "::error::$archive_rel mismatch — archive $ARCHIVE_SHA vs repository $repo_rel $REPO_SHA (release $TAG is stale)"
+              status=1
+            fi
+          done <<< "$STATIC_FILES"
+          exit "$status"
 
       - name: Freeze config pages
         uses: actions/configure-pages@v5
