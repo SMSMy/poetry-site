@@ -21,14 +21,23 @@ function siteUrl(value) {
   return SITE_PREFIX + value;
 }
 
+// Canonical Arabic search normalization. The rules (and the canonical JS source)
+// live in scripts/normalize_ar.py; tests/test_normalize_parity.py fails if the two
+// blocks ever drift, and re-runs both implementations over real corpus tokens.
+// <<normalize-ar>>
+const ARABIC_MARKS = /[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed\u0640]/gu;
 function normalizeArabicQuery(value) {
-  return value
-    .replace(/[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]/gu, "")
-    .replace(/ـ/gu, "")
+  return String(value ?? "")
+    .replace(ARABIC_MARKS, "")
     .replace(/[أإآٱ]/gu, "ا")
     .replace(/ى/gu, "ي")
-    .replace(/ة/gu, "ه");
+    .replace(/ة/gu, "ه")
+    .replace(/ؤ/gu, "و")
+    .replace(/ئ/gu, "ي")
+    .replace(/\s+/gu, " ")
+    .trim();
 }
+// <</normalize-ar>>
 
 async function titleFor(id) {
   const chunkIndex = Math.floor(id / TITLE_CHUNK_SIZE);
@@ -149,6 +158,51 @@ function renderPagefindResults(results, total) {
   }
 }
 
+// ---- ranking -----------------------------------------------------------------
+// Exact matches first. Pagefind's quoted query returns only pages holding the
+// normalized token itself, while the loose query also matches prefix/soft variants
+// (حب -> حبيب/المحبة, ليل -> الليل/ليالي). Measured on the 2012-poet-page catalog
+// (see SEARCH_QA.md): the loose query alone put that noise first — precision@20
+// 50%/75%/50% for ليل/شوق/حب — while exact-first reached precision@20 100% on every
+// query of the QA battery without losing recall, because the loose matches follow
+// after the exact ones. Set to false to fall back to the plain loose search.
+const EXACT_FIRST = true;
+const MAX_RESULTS = 30;
+
+async function pagefindResults(index, query, filters) {
+  if (!query) {
+    const loose = await index.search(null, { filters });
+    return {
+      results: await Promise.all(loose.results.slice(0, MAX_RESULTS).map(r => r.data())),
+      total: loose.results.length,
+    };
+  }
+  if (!EXACT_FIRST) {
+    const loose = await index.search(query, { filters });
+    return {
+      results: await Promise.all(loose.results.slice(0, MAX_RESULTS).map(r => r.data())),
+      total: loose.results.length,
+    };
+  }
+  const exactQuery = `"${String(query).replace(/"/g, "")}"`;
+  const [exact, loose] = await Promise.all([
+    index.search(exactQuery, { filters }),
+    index.search(query, { filters }),
+  ]);
+  const [exactData, looseData] = await Promise.all([
+    Promise.all(exact.results.slice(0, MAX_RESULTS).map(r => r.data())),
+    Promise.all(loose.results.slice(0, MAX_RESULTS * 2).map(r => r.data())),
+  ]);
+  const seen = new Set();
+  const merged = [];
+  for (const data of [...exactData, ...looseData]) {
+    if (!data || seen.has(data.url)) continue;
+    seen.add(data.url);
+    merged.push(data);
+  }
+  return { results: merged.slice(0, MAX_RESULTS), total: loose.results.length };
+}
+
 function renderD1Results(payload) {
   status.textContent = payload.shown
     ? `عدد النتائج: ${payload.shown}${payload.has_more ? "+ المزيد" : ""} — المعروض: ${payload.ids.length}`
@@ -184,10 +238,9 @@ async function runSearch() {
       status.textContent = "تعذر الوصول إلى خدمة D1 — أرجعت إلى فهرس العناوين.";
     }
     const index = await resolvePagefindIndex();
-    const response = await index.search(query || null, { filters: activeFilters });
-    const results = await Promise.all(response.results.slice(0, 30).map(result => result.data()));
+    const { results, total } = await pagefindResults(index, query, activeFilters);
     clearResults();
-    renderPagefindResults(results, response.results.length);
+    renderPagefindResults(results, total);
   } catch (error) {
     status.textContent = "تعذر تحميل فهرس البحث. شغّل الموقع عبر خادم محلي بعد بناء Pagefind.";
     console.error(error);
