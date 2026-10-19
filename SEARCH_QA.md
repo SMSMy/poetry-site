@@ -177,6 +177,38 @@ npx --yes pagefind@1.5.2 --site poetry-static/pagefind-tests/v3 --force-language
 
 ## 9. الاختبار الحي على الموقع المنشور
 
-> يُحدَّث بعد نشر أصل بحث جديد (2012 صفحة شاعر + الفهرس) واختباره على
-> `https://smsmy.github.io/poetry-site/` بالاستعلامات الخمسة: `أبان`، `حب`، `لما`، `لَمّا`، ونص بلا نتيجة —
-> مع لقطات شاشة وأخطاء console وفحص أن الروابط تعمل تحت البادئة `/poetry-site/`.
+نُشر أصل جديد بوسم **`site-search-trial`** (29,237,966 B، 2012 صفحة شاعر + الفهرس المُصلَح، وكل الروابط
+مُعاد كتابتها إلى `/poetry-site/`) عبر تشغيل workflow رقم **39192602688** (نجح):
+
+```
+Using release tag: site-search-trial
+actual:   b9ba131a25cd69551cf0c3bd12299a2b846bc946e59a50189ec806bd2421ac06   (= SHA-256 المحلي)
+OK   css/style.css <- static/css/style.css 62d7872e7436b4bb75ce64001e1e57c4c9ac56876b6cdc42ffab608b33886158
+OK   js/search.js <- static/js/search.js f9e0b665193a83c4c7abdb207804a196649359bb704f81cbd15c8c7e0507ad93
+Evaluated environment url: https://smsmy.github.io/poetry-site/
+```
+
+و`sha256sum` لـ`js/search.js` المسحوب من الموقع الحيّ يساوي بالبايت نفس ملف المستودع
+(`f9e0b665…`) ⇒ الأصل يطابق الالتزام `ece481b`.
+
+### الاستعلامات الخمسة على `https://smsmy.github.io/poetry-site/`
+
+| # | الاستعلام | ما ظهر على الموقع | الروابط | لقطة |
+|---|---|---|---|---|
+| 1 | `أبان` | «عدد النتائج: 81 — المعروض: 30» (أول نتيجة: ابن الرومي، وثالثها أبان اللاحقي `/poet/1.html`) | كلها 200 تحت `/poetry-site/` | `.release-staging/live-test/q1_aban.png` |
+| 2 | `حب` (ضجيج البادئة سابقًا) | «عدد النتائج: 618 — المعروض: 30» والكلمة مُبرَزة ككلمة كاملة في كل مقتطف بالرأس | 200 | `q2_hubb_prefix_noise.png` |
+| 3 | `لما` | 566 نتيجة | 200 | `q3_lama.png` |
+| 4 | `لَمّا` (مع تشكيل) | 566 نتيجة — **مطابقة تمامًا** للاستعلام بلا تشكيل | 200 | `q4_lamma_with_diacritics.png` |
+| 5 | `xyznonexistent123` | «لا توجد نتائج مطابقة.» | — | `q5_no_results.png` |
+
+- أخطاء console: **صفر** (مُلتقطة بطريقتين: `window.onerror`/`console.error`/`unhandledrejection` وأداة console،
+  والرسائل المقروءة = 0).
+- كل روابط النتائج الأربعة الأولى في كل استعلام أرجعت HTTP 200 مع بادئة `/poetry-site/`، و`poet/1191.html`
+  (صفحة «الفتى» في النبذة) يعمل أيضًا.
+- `curl` على الموقع: `index.html` 200، `js/search.js` 200، `pagefind-catalog/pagefind.js` 200،
+  `pagefind-entry.json` 200، `poet/1.html` 200، `poet/1191.html` 200.
+
+ملاحظة مقصودة: صفحات القصائد غير مضمنة في هذا الأصل (981MB، لم يُبنَ الحجم الكامل بأمر المستخدم)، فرابط
+القصيدة من صفحة الشاعر يعطي 404 على الموقع — أما نتائج البحث فكلها صفحات شعراء وتعمل. الأصل الكامل جاهز
+للنشر بلا تعديل: `scripts/archive_final.py` (ينسخ static من HEAD) + نفس workflow.
+
