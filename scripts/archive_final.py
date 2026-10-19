@@ -90,13 +90,21 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--static-source", choices=["head", "worktree"], default="head",
                         help="where static/ is taken from (default: head)")
+    parser.add_argument("--site", default=str(SRC),
+                        help="site tree to pack (default: <repo>/public-final; the real tree "
+                             "usually lives in the poetry-static data directory)")
+    parser.add_argument("--out", default=str(OUT),
+                        help="archive to write (default: <repo>/public-final.tar.gz); the "
+                             "top-level member is always public-final/")
     args = parser.parse_args()
 
-    started = time.perf_counter()
-    if not SRC.exists():
-        raise SystemExit(f"missing {SRC}; build the site tree first")
+    site_root = Path(args.site).expanduser().resolve()
+    out_path = Path(args.out).expanduser().resolve()
 
-    site_root = SRC
+    started = time.perf_counter()
+    if not site_root.exists():
+        raise SystemExit(f"missing {site_root}; build the site tree first")
+
     if args.static_source == "head":
         try:
             static_info = sync_static_from_head(site_root)
@@ -110,22 +118,25 @@ def main() -> None:
         print(f"static {info['site_path']} <- {rel} {info['sha256']} {info['bytes']} B ({static_info['ref']})",
               flush=True)
 
-    with tarfile.open(OUT, "w:gz", compresslevel=1) as tar:
-        tar.add(SRC, arcname="public-final")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(out_path, "w:gz", compresslevel=1) as tar:
+        tar.add(site_root, arcname="public-final")
     elapsed = time.perf_counter() - started
-    raw = sum(p.stat().st_size for p in SRC.rglob("*") if p.is_file())
-    files = sum(1 for p in SRC.rglob("*") if p.is_file())
+    raw = sum(p.stat().st_size for p in site_root.rglob("*") if p.is_file())
+    files = sum(1 for p in site_root.rglob("*") if p.is_file())
     report = {
-        "tar_gz_bytes": OUT.stat().st_size,
-        "tar_gz_sha256": hashlib.sha256(OUT.read_bytes()).hexdigest(),
+        "tar_gz_bytes": out_path.stat().st_size,
+        "tar_gz_sha256": hashlib.sha256(out_path.read_bytes()).hexdigest(),
+        "tar_gz_path": str(out_path),
+        "site_root": str(site_root),
         "raw_bytes": raw,
         "files": files,
         "seconds": round(elapsed, 2),
-        "ratio": round(OUT.stat().st_size / raw, 4),
+        "ratio": round(out_path.stat().st_size / raw, 4),
         "static_source": static_info,
     }
-    (ROOT / "archive_final_valid_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2),
-                                                           encoding="utf-8")
+    report_path = out_path.parent / "archive_final_valid_report.json"
+    report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps({k: report[k] for k in ("tar_gz_bytes", "tar_gz_sha256", "raw_bytes", "files", "seconds")},
                      ensure_ascii=False))
 

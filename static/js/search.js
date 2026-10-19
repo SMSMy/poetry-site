@@ -10,9 +10,10 @@ let filters = {};
 // ---- deployment constants ---------------------------------------------------
 // Pages project path: https://smsmy.github.io/poetry-site/
 const SITE_PREFIX = "/poetry-site";
-// D1 search worker (production). Empty string disables the D1 path until
-// the worker is deployed; when set, results come from D1 + /search-title/.
-const D1_ENDPOINT = ""; // e.g. "https://<worker-subdomain>.workers.dev"
+// D1 search worker (production, deployed 2026-10-19): full-corpus verse search
+// over normalised text; titles are filled from the static /search-title/ chunks.
+// Empty string disables the D1 path (the Pagefind titles index stays as fallback).
+const D1_ENDPOINT = "https://poetry-search.smsmy-poetry.workers.dev";
 const TITLE_CHUNK_SIZE = 2000;
 const titleChunkCache = new Map();
 
@@ -205,7 +206,9 @@ async function pagefindResults(index, query, filters) {
 
 function renderD1Results(payload) {
   status.textContent = payload.shown
-    ? `عدد النتائج: ${payload.shown}${payload.has_more ? "+ المزيد" : ""} — المعروض: ${payload.ids.length}`
+    ? (payload.has_more
+        ? "نتائج أكثر من 100 — تُعرض الأولى فقط."
+        : `عدد النتائج: ${payload.shown}`)
     : "لا توجد نتائج مطابقة.";
   for (const id of payload.ids) {
     appendResult({ title: "", url: siteUrl(`/poem/${id}.html`), snippet: null });
@@ -228,8 +231,10 @@ async function runSearch() {
   status.textContent = "جارٍ البحث…";
   try {
     if (D1_ENDPOINT && !Object.keys(activeFilters).length) {
-      // D1 full-corpus search (normalized text), titles filled from static chunks
-      const response = await fetch(`${D1_ENDPOINT}/search?q=${encodeURIComponent(query)}`);
+      // D1 full-corpus search, titles filled from static chunks. The RAW query is sent:
+      // the worker normalises with the same rules the D1 index was built with (ؤ/ئ kept
+      // as-is), while normalizeArabicQuery maps ؤ→و and ئ→ي for the Pagefind twins.
+      const response = await fetch(`${D1_ENDPOINT}/search?q=${encodeURIComponent(rawValue)}`);
       if (response.ok) {
         clearResults();
         renderD1Results(await response.json());
