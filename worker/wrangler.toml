@@ -14,3 +14,13 @@ enabled = true
 binding = "DB"
 database_name = "poetry-norm-contentless"
 database_id = "c6190992-49f0-4aff-a670-c4e0d77738c1"
+
+# 30 /search requests per minute per client IP (per Cloudflare location).
+# The worker fails open if the limiter itself errors.
+[[ratelimits]]
+name = "SEARCH_RATE_LIMIT"
+namespace_id = "1001"
+
+[ratelimits.simple]
+limit = 30
+period = 60
