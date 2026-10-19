@@ -1,10 +1,13 @@
 name: Deploy Pages (release artifact)
 
 # Publishes the PREBUILT site archive from a GitHub Release — no CI build of hugo.
+# Deployment is MANUAL ONLY (workflow_dispatch): every run must provide the release
+# tag and the archive SHA-256. Pushes to main run the tests workflow, never this one.
 # Expected asset name (exact): public-final.tar.gz
 # The archive contains public-final/* at its top level; we strip one component.
-# Measured locally: archive 343,831,810 B; extracted raw 788,289,048 B (75% of the
-# 1 GB Pages artifact cap) — the whole job should stay far below 10 minutes.
+# Measured locally (site-search-ui-v1): archive 271,549,241 B; extracted raw
+# 812,675,950 B (~81% of the 1 GB Pages artifact cap) — the whole job should stay
+# far below 10 minutes.
 #
 # Every release tag owns one archive (the asset is downloaded without --clobber, so an
 # already-downloaded release is never overwritten locally); publishing a new archive
@@ -13,9 +16,8 @@ name: Deploy Pages (release artifact)
 # files by SHA-256 after extraction, failing the deploy on any mismatch.
 #
 # Usage:
-#   - Use the "Run workflow" button and provide the release tag (e.g., site-v1),
-#   - or push to main, which deploys the tag in a repository variable DEFAULT_RELEASE_TAG
-#     if it exists (fallback: latest release).
+#   - Actions → "Deploy Pages (release artifact)" → "Run workflow".
+#   - Provide the release tag and the expected SHA-256 of public-final.tar.gz.
 
 on:
   workflow_dispatch:
@@ -23,12 +25,9 @@ on:
       tag:
         description: "Release tag that carries public-final.tar.gz"
         required: true
-        default: "site-v1"
       expected_sha256:
-        description: "SHA-256 of public-final.tar.gz (tolerance check before deploy)"
+        description: "SHA-256 of public-final.tar.gz (required; deploy fails on mismatch)"
         required: true
-  push:
-    branches: [main]
 
 permissions:
   contents: read
@@ -56,7 +55,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout repository (for the static-asset comparison)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Download site archive from release
         env:
@@ -64,7 +63,8 @@ jobs:
           TAG_INPUT: ${{ inputs.tag }}
         run: |
           set -euo pipefail
-          TAG="${TAG_INPUT:-$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name)}"
+          TAG="${TAG_INPUT:-}"
+          test -n "$TAG" || { echo "::error::tag is required"; exit 1; }
           echo "Using release tag: $TAG"
           echo "TAG=$TAG" >> "$GITHUB_ENV"
           # No --clobber: a tag's asset is downloaded once and stays untouched.
@@ -79,12 +79,45 @@ jobs:
           EXPECTED_SHA256: ${{ inputs.expected_sha256 }}
         run: |
           set -euo pipefail
+          test -n "${EXPECTED_SHA256:-}" || { echo "::error::expected_sha256 is required"; exit 1; }
           ACTUAL=$(sha256sum "public-final-${TAG}.tar.gz" | cut -d" " -f1)
           echo "actual:   $ACTUAL"
           echo "release:  $TAG"
-          if [ -n "${EXPECTED_SHA256:-}" ] && [ "$ACTUAL" != "$EXPECTED_SHA256" ]; then
+          if [ "$ACTUAL" != "$EXPECTED_SHA256" ]; then
             echo "::error::SHA-256 mismatch (expected $EXPECTED_SHA256)"; exit 1
           fi
+
+      - name: Reject unsafe archive members
+        run: |
+          set -euo pipefail
+          # Refuse path traversal, absolute paths, links, and special entries
+          # before anything is written outside the extraction directory.
+          python3 - "public-final-${TAG}.tar.gz" <<'PY'
+          import sys
+          import tarfile
+
+          archive = sys.argv[1]
+          bad = []
+          with tarfile.open(archive, mode="r|gz") as tf:
+              for member in tf:
+                  name = member.name
+                  if name.startswith("/") or ".." in name.split("/"):
+                      bad.append(f"unsafe path: {name}")
+                  if not (member.isfile() or member.isdir()):
+                      if member.issym():
+                          kind = "symlink"
+                      elif member.islnk():
+                          kind = "hardlink"
+                      else:
+                          kind = "special entry"
+                      target = f" -> {member.linkname}" if member.linkname else ""
+                      bad.append(f"{kind}: {name}{target}")
+          for line in bad[:50]:
+              print(f"::error::{line}")
+          if bad:
+              print(f"::error::{len(bad)} unsafe archive member(s); refusing to extract")
+              sys.exit(1)
+          PY
 
       - name: Extract archive
         run: |
@@ -115,11 +148,11 @@ jobs:
           exit "$status"
 
       - name: Freeze config pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: site
 
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

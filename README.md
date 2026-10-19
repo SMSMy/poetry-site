@@ -4,7 +4,7 @@
 
 - الموقع المنشور: `https://smsmy.github.io/poetry-site/`
 - طريقة النشر: **أصل مسبق البناء** — بدون بناء Hugo داخل CI، وزمن النشر 2 إلى 3 دقائق.
-- أرقام مرجعية: الموقع النهائي 788.3 ميجابايت خامًا، الأرشيف 343.8 ميجابايت، فهرس العناوين 18.1 ميجابايت.
+- أرقام مرجعية: الموقع النهائي 812.7 ميجابايت خامًا، الأرشيف 271.5 ميجابايت، فهرس العناوين 12.4 ميجابايت.
 
 ## 1. بنية المستودع
 
@@ -36,7 +36,7 @@ worker/index.mjs         خدمة البحث الإنتاجية على D1 (لل�
 hugo --minify --destination public-optimized
 python compact_static.py --site public-optimized
 python scripts/minify_final.py
-python normalize_catalog_v2.py --site public-final
+python scripts/normalize_catalog_v2.py --site public-final
 python scripts/generate_title_chunks.py --mode raw
 npx --yes pagefind@1.5.2 --site public-final --glob "**/poet/*.html" --output-subdir pagefind-catalog
 python scripts/archive_final.py
@@ -54,7 +54,7 @@ python scripts/archive_final.py
 4. خطوات الواجهة: تنزيل الأصل، تحقق الـSHA-256، فك الضغط إلى مجلد `site`، رفع الأصل الوسيط، ثم النشر.
 5. زر إعداد يدوي واحد بعد أول تنشيط: Settings → Pages → Source = GitHub Actions.
 
-السقوف: الموقع الخام 788.3MB أقل من سقف صفحات GitHub بفارق مريح (1GB)؛ والأرشيف 343.8MB يُنزَّل سريعًا.
+السقوف: الموقع الخام 812.7MB أقل من سقف صفحات GitHub (1GB) بهامش ~187MB، والسقف العملي ~870MB؛ والأرشيف 271.5MB يُنزَّل سريعًا.
 
 ## 4. خدمة البحث D1 الإنتاج
 
