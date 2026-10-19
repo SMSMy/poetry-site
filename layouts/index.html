@@ -6,15 +6,9 @@
   <form id="search-form" class="search-form" role="search">
     <label class="visually-hidden" for="search-query">عبارة البحث</label>
     <input id="search-query" name="q" type="search" placeholder="اكتب بيتًا أو كلمة أو اسم شاعر" autocomplete="off">
-    <div class="filter-grid">
-      <label>الشاعر<select id="filter-poet"><option value="">كل الشعراء</option></select></label>
-      <label>العصر<select id="filter-era"><option value="">كل العصور</option></select></label>
-      <label>البحر<select id="filter-meter"><option value="">كل البحور</option></select></label>
-      <label>القافية<select id="filter-rhyme"><option value="">كل القوافي</option></select></label>
-    </div>
     <button type="submit">ابحث في القصائد</button>
   </form>
-  <p class="index-size-hint">الفهرس التجريبي يبحث في عناوين القصائد وأسماء الشعراء، ويقترح مقتطفات من العنوان المطابق.</p>
+  <p class="index-size-hint">يبحث في النص الكامل لقصائد الديوان، وتُعرض النتائج مع عناوين القصائد.</p>
 </section>
 <section class="stats-row" aria-label="حجم المكتبة">
   <div><strong>{{ .Params.poetCount | lang.FormatNumber 0 }}</strong><span>شاعر</span></div>
@@ -22,7 +16,7 @@
 </section>
 <section class="results-section" aria-live="polite" aria-busy="false">
   <h2 id="results-heading">ابدأ البحث</h2>
-  <p id="search-status">اكتب كلمة أو اختر مرشحًا للبحث.</p>
+  <p id="search-status">اكتب كلمة للبحث في الديوان.</p>
   <ol id="search-results" class="search-results"></ol>
 </section>
 <section class="era-overview">

@@ -3,9 +3,7 @@ const queryInput = document.querySelector("#search-query");
 const resultList = document.querySelector("#search-results");
 const status = document.querySelector("#search-status");
 const resultsSection = document.querySelector(".results-section");
-const filterIds = { poet: "#filter-poet", era: "#filter-era", meter: "#filter-meter", rhyme: "#filter-rhyme" };
 let pagefind;
-let filters = {};
 
 // ---- deployment constants ---------------------------------------------------
 // Pages project path: https://smsmy.github.io/poetry-site/
@@ -40,16 +38,43 @@ function normalizeArabicQuery(value) {
 }
 // <</normalize-ar>>
 
-async function titleFor(id) {
-  const chunkIndex = Math.floor(id / TITLE_CHUNK_SIZE);
+// The cache holds the in-flight promise too: a page of 100 results asks for the same
+// chunk 100 times before the first fetch resolves, and without it every call would
+// issue its own request. A failed chunk is evicted so a later search can retry.
+async function loadTitleChunk(chunkIndex) {
+  if (!Number.isFinite(chunkIndex) || chunkIndex < 0) return null;
   if (!titleChunkCache.has(chunkIndex)) {
-    const response = await fetch(siteUrl(`/search-title/${chunkIndex}.json`), { priority: "low" });
-    if (!response.ok) return "";
-    titleChunkCache.set(chunkIndex, await response.json());
+    const pending = fetch(siteUrl(`/search-title/${chunkIndex}.json`), { priority: "low" })
+      .then(response => response.ok ? response.json() : null)
+      .catch(() => null);
+    titleChunkCache.set(chunkIndex, pending);
+    const chunk = await pending;
+    if (!chunk) titleChunkCache.delete(chunkIndex);
+    return chunk;
   }
-  const chunk = titleChunkCache.get(chunkIndex);
-  const offset = id - chunk.start;
-  return chunk.titles[offset] || "";
+  return titleChunkCache.get(chunkIndex);
+}
+
+// Titles live in fixed id-ranges: chunkIndex = floor((id-1) / TITLE_CHUNK_SIZE) and
+// offset = id - chunk.start. Missing ids (the corpus gap 32334-32338) are stored as
+// null, and a null/out-of-range hit falls back to the neighbouring chunks so the same
+// code also resolves ids against the older sequentially-sliced chunks.
+async function titleFor(id) {
+  const chunkIndex = Math.floor((id - 1) / TITLE_CHUNK_SIZE);
+  const chunk = await loadTitleChunk(chunkIndex);
+  const offset = chunk ? id - chunk.start : -1;
+  if (chunk && offset >= 0 && offset < chunk.titles.length && chunk.titles[offset] != null) {
+    return chunk.titles[offset] || "";
+  }
+  for (const alt of [chunkIndex - 1, chunkIndex + 1]) {
+    const neighbor = await loadTitleChunk(alt);
+    if (!neighbor) continue;
+    const altOffset = id - neighbor.start;
+    if (altOffset >= 0 && altOffset < neighbor.titles.length && neighbor.titles[altOffset] != null) {
+      return neighbor.titles[altOffset] || "";
+    }
+  }
+  return "";
 }
 
 function cleanSnippet(html) {
@@ -67,33 +92,6 @@ function cleanSnippet(html) {
   };
   copy(parsed.body, output);
   return output;
-}
-
-function addOptions(select, values, firstLabel) {
-  const selectElement = document.querySelector(select);
-  if (!selectElement) return;
-  if (firstLabel) {
-    const defaultOption = document.createElement("option");
-    defaultOption.value = "";
-    defaultOption.textContent = firstLabel;
-    selectElement.append(defaultOption);
-  }
-  const sorted = Object.keys(values || {}).sort((a, b) => a.localeCompare(b, "ar"));
-  for (const value of sorted) {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = `${value} (${values[value]})`;
-    selectElement.append(option);
-  }
-}
-
-function currentFilters() {
-  const selected = {};
-  for (const [key, selector] of Object.entries(filterIds)) {
-    const value = document.querySelector(selector)?.value;
-    if (value && value !== "") selected[key] = value;
-  }
-  return selected;
 }
 
 async function resolvePagefindIndex() {
@@ -117,15 +115,6 @@ async function resolvePagefindIndex() {
     }
   }
   throw lastError || new Error("pagefind index not found");
-}
-
-function emptyFiltersFor(module) {
-  if (!module || typeof module.filters !== "function") return {};
-  return module.filters().then(values => {
-    const selected = {};
-    for (const key of Object.keys(values || {})) selected[key] = [];
-    return selected;
-  }).catch(() => ({}));
 }
 
 function clearResults() {
@@ -170,16 +159,16 @@ function renderPagefindResults(results, total) {
 const EXACT_FIRST = true;
 const MAX_RESULTS = 30;
 
-async function pagefindResults(index, query, filters) {
+async function pagefindResults(index, query) {
   if (!query) {
-    const loose = await index.search(null, { filters });
+    const loose = await index.search(null);
     return {
       results: await Promise.all(loose.results.slice(0, MAX_RESULTS).map(r => r.data())),
       total: loose.results.length,
     };
   }
   if (!EXACT_FIRST) {
-    const loose = await index.search(query, { filters });
+    const loose = await index.search(query);
     return {
       results: await Promise.all(loose.results.slice(0, MAX_RESULTS).map(r => r.data())),
       total: loose.results.length,
@@ -187,8 +176,8 @@ async function pagefindResults(index, query, filters) {
   }
   const exactQuery = `"${String(query).replace(/"/g, "")}"`;
   const [exact, loose] = await Promise.all([
-    index.search(exactQuery, { filters }),
-    index.search(query, { filters }),
+    index.search(exactQuery),
+    index.search(query),
   ]);
   const [exactData, looseData] = await Promise.all([
     Promise.all(exact.results.slice(0, MAX_RESULTS).map(r => r.data())),
@@ -218,19 +207,30 @@ function renderD1Results(payload) {
   }
 }
 
+// Shareable search links: after a successful search the address bar carries ?q=,
+// while any other query parameter and the hash are preserved.
+function rememberQuery(rawValue) {
+  const url = new URL(window.location.href);
+  const params = new URLSearchParams(url.search);
+  params.delete("q");
+  const rest = params.toString();
+  const encoded = `q=${encodeURIComponent(rawValue)}`;
+  url.search = rest ? `${rest}&${encoded}` : encoded;
+  history.replaceState(null, "", url);
+}
+
 async function runSearch() {
   const rawValue = queryInput.value.trim();
   const query = normalizeArabicQuery(rawValue);
-  const activeFilters = currentFilters();
-  if (!query && !Object.keys(activeFilters).length) {
-    status.textContent = "اكتب كلمة أو اختر مرشحًا للبحث.";
+  if (!query) {
+    status.textContent = "اكتب كلمة للبحث في الديوان.";
     clearResults();
     return;
   }
   resultsSection?.setAttribute("aria-busy", "true");
   status.textContent = "جارٍ البحث…";
   try {
-    if (D1_ENDPOINT && !Object.keys(activeFilters).length) {
+    if (D1_ENDPOINT) {
       // D1 full-corpus search, titles filled from static chunks. The RAW query is sent:
       // the worker normalises with the same rules the D1 index was built with (ؤ/ئ kept
       // as-is), while normalizeArabicQuery maps ؤ→و and ئ→ي for the Pagefind twins.
@@ -238,14 +238,16 @@ async function runSearch() {
       if (response.ok) {
         clearResults();
         renderD1Results(await response.json());
+        rememberQuery(rawValue);
         return;
       }
       status.textContent = "تعذر الوصول إلى خدمة D1 — أرجعت إلى فهرس العناوين.";
     }
     const index = await resolvePagefindIndex();
-    const { results, total } = await pagefindResults(index, query, activeFilters);
+    const { results, total } = await pagefindResults(index, query);
     clearResults();
     renderPagefindResults(results, total);
+    rememberQuery(rawValue);
   } catch (error) {
     status.textContent = "تعذر تحميل فهرس البحث. شغّل الموقع عبر خادم محلي بعد بناء Pagefind.";
     console.error(error);
@@ -256,13 +258,9 @@ async function runSearch() {
 
 if (form) {
   form.addEventListener("submit", event => { event.preventDefault(); runSearch(); });
-  for (const selector of Object.values(filterIds)) document.querySelector(selector)?.addEventListener("change", runSearch);
-  import(new URL("../pagefind-catalog/pagefind.js", import.meta.url)).then(async module => {
-    pagefind = module;
-    filters = await pagefind.filters();
-    addOptions(filterIds.poet, filters.poet, "كل الشعراء");
-    addOptions(filterIds.era, filters.era, "كل العصور");
-    addOptions(filterIds.meter, filters.meter, "كل البحور");
-    addOptions(filterIds.rhyme, filters.rhyme, "كل القوافي");
-  }).catch(error => console.warn("Pagefind index is not built yet", error));
+  const initialQuery = new URLSearchParams(window.location.search).get("q");
+  if (initialQuery && initialQuery.trim()) {
+    queryInput.value = initialQuery;
+    runSearch();
+  }
 }
