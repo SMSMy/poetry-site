@@ -232,8 +232,10 @@ async function runSearch() {
   try {
     if (D1_ENDPOINT) {
       // D1 full-corpus search, titles filled from static chunks. The RAW query is sent:
-      // the worker normalises with the same rules the D1 index was built with (ؤ/ئ kept
-      // as-is), while normalizeArabicQuery maps ؤ→و and ئ→ي for the Pagefind twins.
+      // since the batch-4 rebuild the D1 index stores NORMALISED text, and the worker
+      // applies exactly the same rules (ؤ→و, ئ→ي, ة→ه, ى→ي, أإآ→ا) before matching, so
+      // every spelling of a word reaches the same rows. normalizeArabicQuery maps the
+      // same way here, to keep the Pagefind twins aligned.
       const response = await fetch(`${D1_ENDPOINT}/search?q=${encodeURIComponent(rawValue)}`);
       if (response.ok) {
         clearResults();
